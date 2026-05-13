@@ -199,7 +199,16 @@ fun AppNavGraph(
                         }
                     },
                 )
-                CollectionScreen(collectionViewModel)
+                CollectionScreen(
+                    viewModel = collectionViewModel,
+                    onBack = {
+                        if (!navController.popBackStack()) {
+                            navController.navigate(AppRoute.Profile.route) {
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                )
             }
         }
     }

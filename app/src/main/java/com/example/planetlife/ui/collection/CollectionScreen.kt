@@ -19,34 +19,69 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.planetlife.data.local.entity.CreatureEntity
 import com.example.planetlife.ui.components.CreamPanel
-import com.example.planetlife.ui.components.PageContent
+import com.example.planetlife.ui.components.MiniPlanetIcon
+import com.example.planetlife.ui.components.SkyBackground
 import com.example.planetlife.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun CollectionScreen(viewModel: CollectionViewModel) {
+fun CollectionScreen(
+    viewModel: CollectionViewModel,
+    onBack: () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsState()
 
-    PageContent(
-        title = "星球图鉴",
-        subtitle = "探索星球上奇妙的生命与景观"
-    ) {
-        if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = TitleBlue)
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(uiState.creatures) { creature ->
-                    CreatureCard(creature)
+    SkyBackground {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            CollectionTitlePanel(onBack = onBack)
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = TitleBlue)
                 }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(uiState.creatures) { creature ->
+                        CreatureCard(creature)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CollectionTitlePanel(onBack: () -> Unit) {
+    CreamPanel {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBack) {
+                Text(
+                    text = "‹",
+                    color = TitleBlue,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            MiniPlanetIcon()
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+                Text(text = "星球图鉴", style = MaterialTheme.typography.headlineLarge)
+                Text(text = "探索星球上奇妙的生命与景观", style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
