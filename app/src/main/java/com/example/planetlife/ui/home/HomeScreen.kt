@@ -102,6 +102,14 @@ fun HomeScreen(viewModel: HomeViewModel) {
 
                 TodayEventsPanel(events = uiState.todayEvents, nickname = settings.nickname)
 
+                FeedingPanel(
+                    onAction = {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("下一步接入")
+                        }
+                    },
+                )
+
                 BehaviorRecordPanel(
                     onRecord = { w, s, n, c ->
                         viewModel.recordBehavior(w, s, n, c) { message ->
@@ -128,6 +136,35 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 .align(Alignment.BottomCenter)
                 .padding(16.dp),
         )
+    }
+}
+
+@Composable
+fun FeedingPanel(onAction: () -> Unit) {
+    CreamPanel {
+        Text(
+            text = "今日轻喂养",
+            style = MaterialTheme.typography.titleLarge,
+            color = TitleBlue,
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            FeedingButton(text = "补充一杯海洋能量", color = CrystalBlue, onClick = onAction)
+            FeedingButton(text = "种下一点土壤能量", color = CityGold, onClick = onAction)
+            FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onAction)
+            FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onAction)
+        }
+    }
+}
+
+@Composable
+private fun FeedingButton(text: String, color: Color, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+        Text(text = text, fontWeight = FontWeight.Bold)
     }
 }
 
