@@ -8,6 +8,7 @@ import com.example.planetlife.data.local.entity.PlanetEventEntity
 import com.example.planetlife.data.repository.CollectionRepository
 import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
+import com.example.planetlife.data.repository.MoodRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.TaskRepository
@@ -18,6 +19,7 @@ import com.example.planetlife.domain.rules.EcologyRuleEngine
 import com.example.planetlife.domain.rules.EventGenerator
 import com.example.planetlife.domain.rules.PlanetStateCalculator
 import com.example.planetlife.domain.model.EnergyType
+import com.example.planetlife.domain.model.MoodWeather
 import com.example.planetlife.domain.model.PlanetLogType
 import com.example.planetlife.domain.text.LocalPlanetTextGenerator
 import com.example.planetlife.domain.text.PlanetTextGenerator
@@ -48,6 +50,7 @@ class HomeViewModel(
     private val planetRepository: PlanetRepository,
     private val dailyStatsRepository: DailyStatsRepository,
     private val dailyEnergyRepository: DailyEnergyRepository,
+    private val moodRepository: MoodRepository,
     private val eventRepository: PlanetEventRepository,
     private val taskRepository: TaskRepository,
     private val collectionRepository: CollectionRepository,
@@ -161,6 +164,46 @@ class HomeViewModel(
                 energyType = EnergyType.FOREST,
             )
             onComplete(result.body)
+        }
+    }
+
+    fun recordMoodWeather(
+        moodWeather: MoodWeather,
+        onComplete: (String) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            val planetName = uiState.value.planet?.name
+            if (planetName == null) {
+                onComplete("请先创建星球，再记录今日天气")
+                return@launch
+            }
+
+            val generated = textGenerator.generate(
+                TextGenerationRequest(
+                    type = TextGenerationType.MOOD_COMPANION,
+                    planetName = planetName,
+                    moodWeather = moodWeather,
+                )
+            )
+            val message = when (moodWeather) {
+                MoodWeather.RAIN -> "你不用急着放晴，我陪你下会儿小雨。"
+                MoodWeather.THUNDER -> "你现在可以先被保护，不用立刻面对全部事情。"
+                else -> generated.body
+            }
+            moodRepository.saveMood(
+                date = today,
+                moodWeather = moodWeather,
+                message = message,
+            )
+            eventRepository.savePlanetLog(
+                date = today,
+                logType = PlanetLogType.MOOD,
+                title = moodWeather.logTitle,
+                description = message,
+                relatedValue = moodWeather.label,
+                moodWeather = moodWeather,
+            )
+            onComplete(message)
         }
     }
 
@@ -288,4 +331,16 @@ class HomeViewModel(
             onComplete("已随机生成星球生态值")
         }
     }
+
+    private val MoodWeather.label: String
+        get() = when (this) {
+            MoodWeather.SUNNY -> "晴天"
+            MoodWeather.BREEZE -> "微风"
+            MoodWeather.CLOUDY -> "多云"
+            MoodWeather.RAIN -> "小雨"
+            MoodWeather.THUNDER -> "雷云"
+        }
+
+    private val MoodWeather.logTitle: String
+        get() = "${label}心情"
 }

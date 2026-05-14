@@ -7,6 +7,7 @@ import com.example.planetlife.data.repository.CollectionRepository
 import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.FocusRepository
+import com.example.planetlife.data.repository.MoodRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.TaskRepository
@@ -18,6 +19,7 @@ class PlanetLifeApplication : Application() {
     val planetRepository by lazy { PlanetRepository(database.planetDao()) }
     val dailyStatsRepository by lazy { DailyStatsRepository(database.dailyStatsDao()) }
     val dailyEnergyRepository by lazy { DailyEnergyRepository(database.dailyEnergyDao()) }
+    val moodRepository by lazy { MoodRepository(database.moodRecordDao()) }
     val planetEventRepository by lazy { PlanetEventRepository(database.planetEventDao()) }
     val focusRepository by lazy { FocusRepository(database.focusSessionDao()) }
     val taskRepository by lazy { TaskRepository(database.planetTaskDao()) }

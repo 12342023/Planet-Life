@@ -16,6 +16,7 @@ import com.example.planetlife.data.repository.CollectionRepository
 import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.FocusRepository
+import com.example.planetlife.data.repository.MoodRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.TaskRepository
@@ -44,6 +45,7 @@ fun AppNavGraph(
     planetRepository: PlanetRepository,
     dailyStatsRepository: DailyStatsRepository,
     dailyEnergyRepository: DailyEnergyRepository,
+    moodRepository: MoodRepository,
     planetEventRepository: PlanetEventRepository,
     focusRepository: FocusRepository,
     taskRepository: TaskRepository,
@@ -106,6 +108,7 @@ fun AppNavGraph(
                                 planetRepository,
                                 dailyStatsRepository,
                                 dailyEnergyRepository,
+                                moodRepository,
                                 planetEventRepository,
                                 taskRepository,
                                 collectionRepository,

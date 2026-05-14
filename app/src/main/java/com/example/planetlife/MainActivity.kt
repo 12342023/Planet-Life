@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
                     planetRepository = app.planetRepository,
                     dailyStatsRepository = app.dailyStatsRepository,
                     dailyEnergyRepository = app.dailyEnergyRepository,
+                    moodRepository = app.moodRepository,
                     planetEventRepository = app.planetEventRepository,
                     focusRepository = app.focusRepository,
                     taskRepository = app.taskRepository,

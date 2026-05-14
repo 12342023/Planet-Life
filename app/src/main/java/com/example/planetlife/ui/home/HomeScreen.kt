@@ -16,13 +16,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import com.example.planetlife.data.local.entity.PlanetEventEntity
+import com.example.planetlife.domain.model.MoodWeather
 import com.example.planetlife.ui.components.CreamPanel
 import com.example.planetlife.ui.components.DynamicPlanet
 import com.example.planetlife.ui.components.EcologyMeter
 import com.example.planetlife.ui.components.PageContent
 import com.example.planetlife.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -32,6 +33,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
     val settings = uiState.settings
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    var showMoodDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         PageContent(
@@ -124,10 +126,8 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             }
                         }
                     },
-                    onComingSoon = {
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("下一步接入")
-                        }
+                    onMoodWeather = {
+                        showMoodDialog = true
                     },
                 )
 
@@ -157,6 +157,19 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 .align(Alignment.BottomCenter)
                 .padding(16.dp),
         )
+        if (showMoodDialog) {
+            MoodWeatherDialog(
+                onDismiss = { showMoodDialog = false },
+                onSelect = { weather ->
+                    showMoodDialog = false
+                    viewModel.recordMoodWeather(weather) { message ->
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(message)
+                        }
+                    }
+                },
+            )
+        }
     }
 }
 
@@ -165,7 +178,7 @@ fun FeedingPanel(
     onOceanEnergy: () -> Unit,
     onSoilEnergy: () -> Unit,
     onForestEnergy: () -> Unit,
-    onComingSoon: () -> Unit,
+    onMoodWeather: () -> Unit,
 ) {
     CreamPanel {
         Text(
@@ -177,8 +190,69 @@ fun FeedingPanel(
             FeedingButton(text = "补充一杯海洋能量", color = CrystalBlue, onClick = onOceanEnergy)
             FeedingButton(text = "种下一点土壤能量", color = CityGold, onClick = onSoilEnergy)
             FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onForestEnergy)
-            FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onComingSoon)
+            FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onMoodWeather)
         }
+    }
+}
+
+@Composable
+private fun MoodWeatherDialog(
+    onDismiss: () -> Unit,
+    onSelect: (MoodWeather) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("记录今日天气") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                MoodWeatherOption(
+                    text = "晴天",
+                    color = CityGold,
+                    onClick = { onSelect(MoodWeather.SUNNY) },
+                )
+                MoodWeatherOption(
+                    text = "微风",
+                    color = ForestGreen,
+                    onClick = { onSelect(MoodWeather.BREEZE) },
+                )
+                MoodWeatherOption(
+                    text = "多云",
+                    color = DreamPurple,
+                    onClick = { onSelect(MoodWeather.CLOUDY) },
+                )
+                MoodWeatherOption(
+                    text = "小雨",
+                    color = CrystalBlue,
+                    onClick = { onSelect(MoodWeather.RAIN) },
+                )
+                MoodWeatherOption(
+                    text = "雷云",
+                    color = ShadowPurple,
+                    onClick = { onSelect(MoodWeather.THUNDER) },
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("稍后")
+            }
+        },
+    )
+}
+
+@Composable
+private fun MoodWeatherOption(
+    text: String,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = color),
+        shape = MaterialTheme.shapes.medium,
+    ) {
+        Text(text = text, fontWeight = FontWeight.Bold)
     }
 }
 

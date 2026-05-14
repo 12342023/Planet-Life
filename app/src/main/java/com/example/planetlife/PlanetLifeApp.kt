@@ -9,6 +9,7 @@ import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.FocusRepository
+import com.example.planetlife.data.repository.MoodRepository
 import com.example.planetlife.data.repository.TaskRepository
 import com.example.planetlife.data.repository.CollectionRepository
 import com.example.planetlife.data.repository.AppDataRepository
@@ -21,6 +22,7 @@ fun PlanetLifeApp(
     planetRepository: PlanetRepository,
     dailyStatsRepository: DailyStatsRepository,
     dailyEnergyRepository: DailyEnergyRepository,
+    moodRepository: MoodRepository,
     planetEventRepository: PlanetEventRepository,
     focusRepository: FocusRepository,
     taskRepository: TaskRepository,
@@ -48,6 +50,7 @@ fun PlanetLifeApp(
             planetRepository = planetRepository,
             dailyStatsRepository = dailyStatsRepository,
             dailyEnergyRepository = dailyEnergyRepository,
+            moodRepository = moodRepository,
             planetEventRepository = planetEventRepository,
             focusRepository = focusRepository,
             taskRepository = taskRepository,
