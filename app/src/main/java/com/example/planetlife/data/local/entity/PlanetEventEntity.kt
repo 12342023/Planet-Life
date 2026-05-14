@@ -13,5 +13,10 @@ data class PlanetEventEntity(
     val description: String,
     val relatedValue: String,
     val rarity: String,
+    val logType: String? = null,
+    val energyType: String? = null,
+    val moodWeather: String? = null,
+    val displayDate: String? = null,
+    val metadata: String? = null,
     val createdAt: Long = System.currentTimeMillis()
 )
