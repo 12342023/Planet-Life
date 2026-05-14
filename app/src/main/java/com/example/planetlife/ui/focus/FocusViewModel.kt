@@ -33,7 +33,7 @@ data class FocusUiState(
     val remainingSeconds: Int = 25 * 60,
     val status: TimerStatus = TimerStatus.IDLE,
     val displayTime: String = "25:00",
-    val statusText: String = "水晶塔等待充能",
+    val statusText: String = "星核正在安静等待",
     val showFeedback: Boolean = false,
     val lastReward: Int = 0
 )
@@ -70,13 +70,13 @@ class FocusViewModel(
         if (_uiState.value.status == TimerStatus.IDLE) {
             startTime = System.currentTimeMillis()
         }
-        _uiState.update { it.copy(status = TimerStatus.RUNNING, statusText = "专注能量汇聚中...", showFeedback = false) }
+        _uiState.update { it.copy(status = TimerStatus.RUNNING, statusText = "星核光流慢慢聚拢中...", showFeedback = false) }
         runTimer()
     }
 
     fun pauseTimer() {
         timerJob?.cancel()
-        _uiState.update { it.copy(status = TimerStatus.PAUSED, statusText = "专注暂时中断") }
+        _uiState.update { it.copy(status = TimerStatus.PAUSED, statusText = "光流暂时停在这里") }
     }
 
     fun resumeTimer() {
@@ -115,7 +115,7 @@ class FocusViewModel(
         _uiState.update { 
             it.copy(
                 status = TimerStatus.FINISHED, 
-                statusText = "充能完成！", 
+                statusText = "星核慢慢亮了起来",
                 showFeedback = true,
                 lastReward = it.selectedMinutes 
             ) 
@@ -130,7 +130,7 @@ class FocusViewModel(
                 status = TimerStatus.IDLE,
                 remainingSeconds = it.selectedMinutes * 60,
                 displayTime = formatTime(it.selectedMinutes * 60),
-                statusText = "水晶塔等待充能"
+                statusText = "星核正在安静等待"
             )
         }
     }
@@ -185,9 +185,9 @@ class FocusViewModel(
             eventRepository.saveEvent(PlanetEventEntity(
                 date = today,
                 eventType = "CRYSTAL_RESONANCE",
-                title = "水晶共鸣",
-                description = "水晶塔完成一次充能，星球核心传来清澈的回响。",
-                relatedValue = "水晶",
+                title = "星核微光",
+                description = "星核慢慢亮了起来，星球把这段安静的时间收进了身体深处。",
+                relatedValue = "星核",
                 rarity = "普通"
             ))
         }

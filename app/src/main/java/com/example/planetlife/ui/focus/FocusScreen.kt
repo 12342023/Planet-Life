@@ -24,7 +24,7 @@ import com.example.planetlife.ui.theme.*
 fun FocusScreen(viewModel: FocusViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    PageContent(title = "专注模式", subtitle = uiState.statusText) {
+    PageContent(title = "星核时间", subtitle = uiState.statusText) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -111,7 +111,7 @@ fun TimerPanel(
                         colors = ButtonDefaults.buttonColors(containerColor = ForestGreen),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("开始专注", fontWeight = FontWeight.Bold)
+                        Text("开始星核时间", fontWeight = FontWeight.Bold)
                     }
                 }
                 TimerStatus.RUNNING -> {
@@ -121,7 +121,7 @@ fun TimerPanel(
                         colors = ButtonDefaults.buttonColors(containerColor = CityGold),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("暂停", fontWeight = FontWeight.Bold)
+                        Text("暂停光流", fontWeight = FontWeight.Bold)
                     }
                     OutlinedButton(
                         onClick = onStop,
@@ -129,7 +129,7 @@ fun TimerPanel(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningRed)
                     ) {
-                        Text("结束")
+                        Text("结束这段安静")
                     }
                 }
                 TimerStatus.PAUSED -> {
@@ -139,7 +139,7 @@ fun TimerPanel(
                         colors = ButtonDefaults.buttonColors(containerColor = ForestGreen),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("继续", fontWeight = FontWeight.Bold)
+                        Text("继续星核时间", fontWeight = FontWeight.Bold)
                     }
                     OutlinedButton(
                         onClick = onStop,
@@ -147,7 +147,7 @@ fun TimerPanel(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningRed)
                     ) {
-                        Text("结束")
+                        Text("结束这段安静")
                     }
                 }
             }
@@ -161,7 +161,7 @@ fun DurationSelectionPanel(selectedMinutes: Int, onSelect: (Int) -> Unit) {
     var customText by remember { mutableStateOf("") }
 
     CreamPanel {
-        Text(text = "专注时长", style = MaterialTheme.typography.titleLarge, color = TitleBlue)
+        Text(text = "星核时间", style = MaterialTheme.typography.titleLarge, color = TitleBlue)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -198,14 +198,14 @@ fun DurationSelectionPanel(selectedMinutes: Int, onSelect: (Int) -> Unit) {
 fun FocusFeedbackPanel(showFeedback: Boolean, reward: Int) {
     if (showFeedback) {
         CreamPanel {
-            Text(text = "专注成果", style = MaterialTheme.typography.titleLarge, color = TitleBlue)
+            Text(text = "星核回应", style = MaterialTheme.typography.titleLarge, color = TitleBlue)
             Text(
-                text = "你完成了一次深度专注，水晶塔吸收了能量。",
+                text = "星核慢慢亮了起来，星球把这段安静的时间收进了身体深处。",
                 style = MaterialTheme.typography.bodyLarge,
                 color = TextBrown
             )
             Text(
-                text = "+$reward 水晶能量",
+                text = "星核微光 +$reward",
                 style = MaterialTheme.typography.headlineSmall,
                 color = CrystalBlue,
                 fontWeight = FontWeight.Bold
