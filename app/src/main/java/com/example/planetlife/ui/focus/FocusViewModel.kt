@@ -4,14 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.planetlife.data.local.entity.DailyStatsEntity
 import com.example.planetlife.data.local.entity.FocusSessionEntity
-import com.example.planetlife.data.local.entity.PlanetEventEntity
 import com.example.planetlife.data.repository.CollectionRepository
+import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.FocusRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.TaskRepository
+import com.example.planetlife.domain.model.EnergyType
+import com.example.planetlife.domain.model.PlanetLogType
 import com.example.planetlife.domain.rules.CollectionUnlocker
+import com.example.planetlife.domain.text.LocalPlanetTextGenerator
+import com.example.planetlife.domain.text.PlanetTextGenerator
+import com.example.planetlife.domain.text.TextGenerationRequest
+import com.example.planetlife.domain.text.TextGenerationType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,9 +48,11 @@ class FocusViewModel(
     private val focusRepository: FocusRepository,
     private val planetRepository: PlanetRepository,
     private val dailyStatsRepository: DailyStatsRepository,
+    private val dailyEnergyRepository: DailyEnergyRepository,
     private val eventRepository: PlanetEventRepository,
     private val taskRepository: TaskRepository,
-    private val collectionRepository: CollectionRepository
+    private val collectionRepository: CollectionRepository,
+    private val textGenerator: PlanetTextGenerator = LocalPlanetTextGenerator()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FocusUiState())
@@ -84,11 +92,13 @@ class FocusViewModel(
     }
 
     fun stopTimer() {
-        val wasRunningOrPaused = _uiState.value.status == TimerStatus.RUNNING || _uiState.value.status == TimerStatus.PAUSED
+        val status = _uiState.value.status
+        val wasRunningOrPaused = status == TimerStatus.RUNNING || status == TimerStatus.PAUSED
         timerJob?.cancel()
         
         if (wasRunningOrPaused) {
             saveSession(completed = false)
+            logEarlyStop()
         }
         
         resetTimer()
@@ -148,20 +158,44 @@ class FocusViewModel(
         }
     }
 
+    private fun logEarlyStop() {
+        viewModelScope.launch {
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            eventRepository.savePlanetLog(
+                date = today,
+                logType = PlanetLogType.ENERGY,
+                title = "星核小憩",
+                description = "这一小段安静也被星球收下了，星核的光没有熄灭，只是变得更轻。",
+                energyType = EnergyType.CORE
+            )
+        }
+    }
+
     private fun applyRewards() {
         viewModelScope.launch {
             val minutes = _uiState.value.selectedMinutes
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-            
-            // 1. Update Planet
+
             val planet = planetRepository.observePlanet().firstOrNull() ?: return@launch
+            val result = textGenerator.generate(
+                TextGenerationRequest(
+                    type = TextGenerationType.ENERGY_FEEDBACK,
+                    planetName = planet.name,
+                    energyType = EnergyType.CORE,
+                )
+            )
+
+            // 1. Update Core Energy
+            dailyEnergyRepository.addEnergy(today, EnergyType.CORE)
+
+            // 2. Update Planet
             val updatedPlanet = planet.copy(
                 crystalValue = (planet.crystalValue + minutes).coerceIn(0, 100),
                 updatedAt = System.currentTimeMillis()
             )
             planetRepository.savePlanet(updatedPlanet)
 
-            // 2. Update Daily Stats
+            // 3. Update Daily Stats
             val stats = dailyStatsRepository.getStatsByDate(today) ?: DailyStatsEntity(date = today)
             val balanceScore = updatedPlanet.forestValue +
                 updatedPlanet.crystalValue +
@@ -175,21 +209,21 @@ class FocusViewModel(
             )
             dailyStatsRepository.saveStats(updatedStats)
 
-            // 3. Update Task Progress
+            // 4. Update Task Progress
             taskRepository.updateTaskProgress("FOCUS", today, updatedStats.focusMinutes)
 
-            // 4. Check Collection Unlocks
+            // 5. Check Collection Unlocks
             collectionUnlocker.checkUnlocks(updatedPlanet, updatedStats)
 
-            // 5. Generate Event
-            eventRepository.saveEvent(PlanetEventEntity(
+            // 6. Generate Planet Log
+            eventRepository.savePlanetLog(
                 date = today,
-                eventType = "CRYSTAL_RESONANCE",
-                title = "星核微光",
-                description = "星核慢慢亮了起来，星球把这段安静的时间收进了身体深处。",
+                logType = PlanetLogType.ENERGY,
+                title = result.title,
+                description = result.body,
                 relatedValue = "星核",
-                rarity = "普通"
-            ))
+                energyType = EnergyType.CORE
+            )
         }
     }
 

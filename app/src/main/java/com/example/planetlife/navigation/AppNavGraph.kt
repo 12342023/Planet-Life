@@ -137,6 +137,7 @@ fun AppNavGraph(
                                 focusRepository,
                                 planetRepository,
                                 dailyStatsRepository,
+                                dailyEnergyRepository,
                                 planetEventRepository,
                                 taskRepository,
                                 collectionRepository

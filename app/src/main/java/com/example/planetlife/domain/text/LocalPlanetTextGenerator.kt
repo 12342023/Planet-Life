@@ -93,6 +93,7 @@ class LocalPlanetTextGenerator(
             EnergyType.CORE to listOf(
                 "星核安静地亮了一下，把专注的时间收进深处。",
                 "星球的心口多了一点稳定的光，慢慢托住今天。",
+                "星核慢慢亮了起来，星球把这段安静的时间收进了身体深处。",
             ),
         )
 
