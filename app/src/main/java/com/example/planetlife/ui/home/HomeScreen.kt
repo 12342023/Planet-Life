@@ -103,7 +103,14 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 TodayEventsPanel(events = uiState.todayEvents, nickname = settings.nickname)
 
                 FeedingPanel(
-                    onAction = {
+                    onOceanEnergy = {
+                        viewModel.recordOceanEnergy { message ->
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(message)
+                            }
+                        }
+                    },
+                    onComingSoon = {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar("下一步接入")
                         }
@@ -140,7 +147,10 @@ fun HomeScreen(viewModel: HomeViewModel) {
 }
 
 @Composable
-fun FeedingPanel(onAction: () -> Unit) {
+fun FeedingPanel(
+    onOceanEnergy: () -> Unit,
+    onComingSoon: () -> Unit,
+) {
     CreamPanel {
         Text(
             text = "今日轻喂养",
@@ -148,10 +158,10 @@ fun FeedingPanel(onAction: () -> Unit) {
             color = TitleBlue,
         )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FeedingButton(text = "补充一杯海洋能量", color = CrystalBlue, onClick = onAction)
-            FeedingButton(text = "种下一点土壤能量", color = CityGold, onClick = onAction)
-            FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onAction)
-            FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onAction)
+            FeedingButton(text = "补充一杯海洋能量", color = CrystalBlue, onClick = onOceanEnergy)
+            FeedingButton(text = "种下一点土壤能量", color = CityGold, onClick = onComingSoon)
+            FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onComingSoon)
+            FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onComingSoon)
         }
     }
 }

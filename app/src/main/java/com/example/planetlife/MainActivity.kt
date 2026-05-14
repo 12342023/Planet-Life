@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
                 PlanetLifeApp(
                     planetRepository = app.planetRepository,
                     dailyStatsRepository = app.dailyStatsRepository,
+                    dailyEnergyRepository = app.dailyEnergyRepository,
                     planetEventRepository = app.planetEventRepository,
                     focusRepository = app.focusRepository,
                     taskRepository = app.taskRepository,

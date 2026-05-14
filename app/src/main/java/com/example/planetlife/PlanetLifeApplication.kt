@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.planetlife.data.local.AppDatabase
 import com.example.planetlife.data.repository.AppDataRepository
 import com.example.planetlife.data.repository.CollectionRepository
+import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.FocusRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
@@ -16,6 +17,7 @@ class PlanetLifeApplication : Application() {
     private val database by lazy { AppDatabase.getInstance(this) }
     val planetRepository by lazy { PlanetRepository(database.planetDao()) }
     val dailyStatsRepository by lazy { DailyStatsRepository(database.dailyStatsDao()) }
+    val dailyEnergyRepository by lazy { DailyEnergyRepository(database.dailyEnergyDao()) }
     val planetEventRepository by lazy { PlanetEventRepository(database.planetEventDao()) }
     val focusRepository by lazy { FocusRepository(database.focusSessionDao()) }
     val taskRepository by lazy { TaskRepository(database.planetTaskDao()) }

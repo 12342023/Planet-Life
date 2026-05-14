@@ -6,6 +6,7 @@ import com.example.planetlife.data.local.entity.DailyStatsEntity
 import com.example.planetlife.data.local.entity.PlanetEntity
 import com.example.planetlife.data.local.entity.PlanetEventEntity
 import com.example.planetlife.data.repository.CollectionRepository
+import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
 import com.example.planetlife.data.repository.PlanetRepository
@@ -16,6 +17,12 @@ import com.example.planetlife.domain.rules.CollectionUnlocker
 import com.example.planetlife.domain.rules.EcologyRuleEngine
 import com.example.planetlife.domain.rules.EventGenerator
 import com.example.planetlife.domain.rules.PlanetStateCalculator
+import com.example.planetlife.domain.model.EnergyType
+import com.example.planetlife.domain.model.PlanetLogType
+import com.example.planetlife.domain.text.LocalPlanetTextGenerator
+import com.example.planetlife.domain.text.PlanetTextGenerator
+import com.example.planetlife.domain.text.TextGenerationRequest
+import com.example.planetlife.domain.text.TextGenerationType
 import com.example.planetlife.notification.SedentaryReminderNotifier
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,11 +47,13 @@ data class HomeUiState(
 class HomeViewModel(
     private val planetRepository: PlanetRepository,
     private val dailyStatsRepository: DailyStatsRepository,
+    private val dailyEnergyRepository: DailyEnergyRepository,
     private val eventRepository: PlanetEventRepository,
     private val taskRepository: TaskRepository,
     private val collectionRepository: CollectionRepository,
     private val settingsDataStore: SettingsDataStore,
     private val sedentaryReminderNotifier: SedentaryReminderNotifier,
+    private val textGenerator: PlanetTextGenerator = LocalPlanetTextGenerator(),
 ) : ViewModel() {
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -70,6 +79,34 @@ class HomeViewModel(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState()
     )
+
+    fun recordOceanEnergy(onComplete: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            val planetName = uiState.value.planet?.name
+            if (planetName == null) {
+                onComplete("请先创建星球，再补充海洋能量")
+                return@launch
+            }
+
+            val result = textGenerator.generate(
+                TextGenerationRequest(
+                    type = TextGenerationType.ENERGY_FEEDBACK,
+                    planetName = planetName,
+                    energyType = EnergyType.OCEAN,
+                )
+            )
+            dailyEnergyRepository.addEnergy(today, EnergyType.OCEAN)
+            eventRepository.savePlanetLog(
+                date = today,
+                logType = PlanetLogType.ENERGY,
+                title = result.title,
+                description = result.body,
+                relatedValue = "海洋",
+                energyType = EnergyType.OCEAN,
+            )
+            onComplete(result.body)
+        }
+    }
 
     fun recordBehavior(
         walking: Int = 0,

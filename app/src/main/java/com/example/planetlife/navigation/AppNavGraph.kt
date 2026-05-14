@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.planetlife.data.repository.AppDataRepository
 import com.example.planetlife.data.repository.CollectionRepository
+import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.FocusRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
@@ -42,6 +43,7 @@ fun AppNavGraph(
     startDestination: String,
     planetRepository: PlanetRepository,
     dailyStatsRepository: DailyStatsRepository,
+    dailyEnergyRepository: DailyEnergyRepository,
     planetEventRepository: PlanetEventRepository,
     focusRepository: FocusRepository,
     taskRepository: TaskRepository,
@@ -103,6 +105,7 @@ fun AppNavGraph(
                             return HomeViewModel(
                                 planetRepository,
                                 dailyStatsRepository,
+                                dailyEnergyRepository,
                                 planetEventRepository,
                                 taskRepository,
                                 collectionRepository,

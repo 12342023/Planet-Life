@@ -4,9 +4,10 @@ import androidx.compose.runtime.*
 import androidx.navigation.compose.rememberNavController
 import com.example.planetlife.navigation.AppNavGraph
 import com.example.planetlife.navigation.AppRoute
-import com.example.planetlife.data.repository.PlanetRepository
+import com.example.planetlife.data.repository.DailyEnergyRepository
 import com.example.planetlife.data.repository.DailyStatsRepository
 import com.example.planetlife.data.repository.PlanetEventRepository
+import com.example.planetlife.data.repository.PlanetRepository
 import com.example.planetlife.data.repository.FocusRepository
 import com.example.planetlife.data.repository.TaskRepository
 import com.example.planetlife.data.repository.CollectionRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.firstOrNull
 fun PlanetLifeApp(
     planetRepository: PlanetRepository,
     dailyStatsRepository: DailyStatsRepository,
+    dailyEnergyRepository: DailyEnergyRepository,
     planetEventRepository: PlanetEventRepository,
     focusRepository: FocusRepository,
     taskRepository: TaskRepository,
@@ -45,6 +47,7 @@ fun PlanetLifeApp(
             startDestination = destination,
             planetRepository = planetRepository,
             dailyStatsRepository = dailyStatsRepository,
+            dailyEnergyRepository = dailyEnergyRepository,
             planetEventRepository = planetEventRepository,
             focusRepository = focusRepository,
             taskRepository = taskRepository,
