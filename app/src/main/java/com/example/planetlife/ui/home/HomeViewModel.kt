@@ -28,7 +28,7 @@ import java.util.Locale
 import kotlin.random.Random
 
 data class HomeUiState(
-    val appName: String = "口袋星球",
+    val appName: String = "星球宠物",
     val planet: PlanetEntity? = null,
     val todayStats: DailyStatsEntity? = null,
     val todayEvents: List<PlanetEventEntity> = emptyList(),

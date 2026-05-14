@@ -26,7 +26,7 @@ fun OnboardingScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     PageContent(
-        title = "口袋星球",
+        title = "星球宠物",
         subtitle = "你的生活，正在形成一颗星球"
     ) {
         Column(
