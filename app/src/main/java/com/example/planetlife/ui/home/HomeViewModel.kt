@@ -203,6 +203,17 @@ class HomeViewModel(
                 relatedValue = moodWeather.label,
                 moodWeather = moodWeather,
             )
+            if (settingsDataStore.recordMoodStarReward(today)) {
+                dailyEnergyRepository.addEnergy(today, EnergyType.STAR, 2)
+                eventRepository.savePlanetLog(
+                    date = today,
+                    logType = PlanetLogType.ENERGY,
+                    title = "心情照亮星空",
+                    description = "你记录了今天的天气，夜空多亮起两点星辰。",
+                    relatedValue = "星辰",
+                    energyType = EnergyType.STAR,
+                )
+            }
             onComplete(message)
         }
     }
