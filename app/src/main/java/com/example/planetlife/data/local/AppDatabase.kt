@@ -10,6 +10,7 @@ import com.example.planetlife.data.local.dao.CreatureDao
 import com.example.planetlife.data.local.dao.DailyEnergyDao
 import com.example.planetlife.data.local.dao.DailyStatsDao
 import com.example.planetlife.data.local.dao.FocusSessionDao
+import com.example.planetlife.data.local.dao.MoodRecordDao
 import com.example.planetlife.data.local.dao.PlanetDao
 import com.example.planetlife.data.local.dao.PlanetEventDao
 import com.example.planetlife.data.local.dao.PlanetTaskDao
@@ -17,6 +18,7 @@ import com.example.planetlife.data.local.entity.CreatureEntity
 import com.example.planetlife.data.local.entity.DailyEnergyEntity
 import com.example.planetlife.data.local.entity.DailyStatsEntity
 import com.example.planetlife.data.local.entity.FocusSessionEntity
+import com.example.planetlife.data.local.entity.MoodRecordEntity
 import com.example.planetlife.data.local.entity.PlanetEntity
 import com.example.planetlife.data.local.entity.PlanetEventEntity
 import com.example.planetlife.data.local.entity.PlanetTaskEntity
@@ -29,9 +31,10 @@ import com.example.planetlife.data.local.entity.PlanetTaskEntity
         PlanetEventEntity::class,
         FocusSessionEntity::class,
         PlanetTaskEntity::class,
-        CreatureEntity::class
+        CreatureEntity::class,
+        MoodRecordEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,6 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun focusSessionDao(): FocusSessionDao
     abstract fun planetTaskDao(): PlanetTaskDao
     abstract fun creatureDao(): CreatureDao
+    abstract fun moodRecordDao(): MoodRecordDao
 
     companion object {
         @Volatile
@@ -54,7 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "planet_life.db",
                 )
-                .addMigrations(MIGRATION_6_7, MIGRATION_7_8)
+                .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                 .fallbackToDestructiveMigrationFrom(true, 1, 2, 3, 4, 5)
                 .build().also { instance = it }
             }
@@ -84,6 +88,23 @@ abstract class AppDatabase : RoomDatabase() {
                         `light` INTEGER NOT NULL,
                         `star` INTEGER NOT NULL,
                         `core` INTEGER NOT NULL,
+                        `updatedAt` INTEGER NOT NULL,
+                        PRIMARY KEY(`date`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `mood_records` (
+                        `date` TEXT NOT NULL,
+                        `moodWeather` TEXT NOT NULL,
+                        `message` TEXT NOT NULL,
+                        `createdAt` INTEGER NOT NULL,
                         `updatedAt` INTEGER NOT NULL,
                         PRIMARY KEY(`date`)
                     )
