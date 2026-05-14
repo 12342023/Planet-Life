@@ -117,6 +117,13 @@ fun HomeScreen(viewModel: HomeViewModel) {
                             }
                         }
                     },
+                    onForestEnergy = {
+                        viewModel.recordForestEnergy { message ->
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(message)
+                            }
+                        }
+                    },
                     onComingSoon = {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar("下一步接入")
@@ -157,6 +164,7 @@ fun HomeScreen(viewModel: HomeViewModel) {
 fun FeedingPanel(
     onOceanEnergy: () -> Unit,
     onSoilEnergy: () -> Unit,
+    onForestEnergy: () -> Unit,
     onComingSoon: () -> Unit,
 ) {
     CreamPanel {
@@ -168,7 +176,7 @@ fun FeedingPanel(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             FeedingButton(text = "补充一杯海洋能量", color = CrystalBlue, onClick = onOceanEnergy)
             FeedingButton(text = "种下一点土壤能量", color = CityGold, onClick = onSoilEnergy)
-            FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onComingSoon)
+            FeedingButton(text = "送来一点森林能量", color = ForestGreen, onClick = onForestEnergy)
             FeedingButton(text = "记录今日天气", color = DreamPurple, onClick = onComingSoon)
         }
     }

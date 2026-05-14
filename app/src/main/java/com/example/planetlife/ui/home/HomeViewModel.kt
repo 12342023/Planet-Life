@@ -136,6 +136,34 @@ class HomeViewModel(
         }
     }
 
+    fun recordForestEnergy(onComplete: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            val planetName = uiState.value.planet?.name
+            if (planetName == null) {
+                onComplete("请先创建星球，再送来森林能量")
+                return@launch
+            }
+
+            val result = textGenerator.generate(
+                TextGenerationRequest(
+                    type = TextGenerationType.ENERGY_FEEDBACK,
+                    planetName = planetName,
+                    energyType = EnergyType.FOREST,
+                )
+            )
+            dailyEnergyRepository.addEnergy(today, EnergyType.FOREST)
+            eventRepository.savePlanetLog(
+                date = today,
+                logType = PlanetLogType.ENERGY,
+                title = result.title,
+                description = result.body,
+                relatedValue = "森林",
+                energyType = EnergyType.FOREST,
+            )
+            onComplete(result.body)
+        }
+    }
+
     fun recordBehavior(
         walking: Int = 0,
         sedentary: Int = 0,
