@@ -108,6 +108,34 @@ class HomeViewModel(
         }
     }
 
+    fun recordSoilEnergy(onComplete: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            val planetName = uiState.value.planet?.name
+            if (planetName == null) {
+                onComplete("请先创建星球，再种下土壤能量")
+                return@launch
+            }
+
+            val result = textGenerator.generate(
+                TextGenerationRequest(
+                    type = TextGenerationType.ENERGY_FEEDBACK,
+                    planetName = planetName,
+                    energyType = EnergyType.SOIL,
+                )
+            )
+            dailyEnergyRepository.addEnergy(today, EnergyType.SOIL)
+            eventRepository.savePlanetLog(
+                date = today,
+                logType = PlanetLogType.ENERGY,
+                title = result.title,
+                description = result.body,
+                relatedValue = "土壤",
+                energyType = EnergyType.SOIL,
+            )
+            onComplete(result.body)
+        }
+    }
+
     fun recordBehavior(
         walking: Int = 0,
         sedentary: Int = 0,
