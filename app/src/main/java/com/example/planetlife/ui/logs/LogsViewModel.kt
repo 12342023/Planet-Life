@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.planetlife.data.local.entity.PlanetEventEntity
 import com.example.planetlife.data.repository.PlanetEventRepository
+import com.example.planetlife.domain.model.EnergyType
+import com.example.planetlife.domain.model.PlanetLogType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +21,20 @@ data class CalendarDayUi(
     val label: String,
     val isToday: Boolean = false,
     val isSelected: Boolean = false,
+    val markers: List<CalendarMarkerType> = emptyList(),
 )
+
+enum class CalendarMarkerType {
+    OCEAN,
+    SOIL,
+    FOREST,
+    DREAM,
+    LIGHT,
+    STAR,
+    CORE,
+    MOOD,
+    CREATURE,
+}
 
 data class LogsUiState(
     val visibleMonth: YearMonth = YearMonth.now(),
@@ -44,12 +59,13 @@ class LogsViewModel(
         visibleMonth,
         selectedDate,
     ) { events, month, selectedDate ->
+        val markersByDate = buildMarkersByDate(events)
         LogsUiState(
             visibleMonth = month,
             monthTitle = "${month.year}年${month.monthValue}月",
             selectedDate = selectedDate,
             selectedDateLabel = selectedDate.format(dateLabelFormatter),
-            monthDays = buildMonthDays(month, selectedDate),
+            monthDays = buildMonthDays(month, selectedDate, markersByDate),
             events = events.filter { it.date == selectedDate.toString() },
             isLoading = false,
         )
@@ -59,7 +75,7 @@ class LogsViewModel(
         initialValue = LogsUiState(
             monthTitle = "${YearMonth.now().year}年${YearMonth.now().monthValue}月",
             selectedDateLabel = LocalDate.now().format(dateLabelFormatter),
-            monthDays = buildMonthDays(YearMonth.now(), LocalDate.now()),
+            monthDays = buildMonthDays(YearMonth.now(), LocalDate.now(), emptyMap()),
         )
     )
 
@@ -90,6 +106,7 @@ class LogsViewModel(
     private fun buildMonthDays(
         month: YearMonth,
         selectedDate: LocalDate,
+        markersByDate: Map<String, List<CalendarMarkerType>>,
     ): List<CalendarDayUi> {
         val today = LocalDate.now()
         val leadingEmptyDays = month.atDay(1).dayOfWeek.value - 1
@@ -106,6 +123,7 @@ class LogsViewModel(
                 label = day.toString(),
                 isToday = date == today,
                 isSelected = date == selectedDate,
+                markers = markersByDate[date.toString()].orEmpty(),
             )
         }
 
@@ -115,5 +133,38 @@ class LogsViewModel(
         }
 
         return days
+    }
+
+    private fun buildMarkersByDate(events: List<PlanetEventEntity>): Map<String, List<CalendarMarkerType>> {
+        return events.groupBy { it.date }.mapValues { (_, dayEvents) ->
+            dayEvents
+                .flatMap { it.calendarMarkers() }
+                .distinct()
+                .take(3)
+        }
+    }
+
+    private fun PlanetEventEntity.calendarMarkers(): List<CalendarMarkerType> {
+        val markers = mutableListOf<CalendarMarkerType>()
+
+        when (energyType) {
+            EnergyType.OCEAN.name -> markers += CalendarMarkerType.OCEAN
+            EnergyType.SOIL.name -> markers += CalendarMarkerType.SOIL
+            EnergyType.FOREST.name -> markers += CalendarMarkerType.FOREST
+            EnergyType.DREAM.name -> markers += CalendarMarkerType.DREAM
+            EnergyType.LIGHT.name -> markers += CalendarMarkerType.LIGHT
+            EnergyType.STAR.name -> markers += CalendarMarkerType.STAR
+            EnergyType.CORE.name -> markers += CalendarMarkerType.CORE
+        }
+
+        val type = logType ?: eventType
+        if (moodWeather != null || type == PlanetLogType.MOOD.name) {
+            markers += CalendarMarkerType.MOOD
+        }
+        if (type == PlanetLogType.CREATURE_APPEARED.name || type == PlanetLogType.CREATURE_MET.name) {
+            markers += CalendarMarkerType.CREATURE
+        }
+
+        return markers
     }
 }

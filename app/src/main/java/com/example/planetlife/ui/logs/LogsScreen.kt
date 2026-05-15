@@ -167,7 +167,7 @@ private fun RowScope.CalendarDayCell(
     }
     val textColor = if (day.isSelected) Color.White else TextBrown
 
-    Box(
+    Column(
         modifier = Modifier
             .weight(1f)
             .aspectRatio(1f)
@@ -175,7 +175,8 @@ private fun RowScope.CalendarDayCell(
             .background(background)
             .border(1.dp, borderColor, shape)
             .clickable { onSelectDate(date) },
-        contentAlignment = Alignment.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = day.label,
@@ -183,8 +184,71 @@ private fun RowScope.CalendarDayCell(
             color = textColor,
             fontWeight = if (day.isToday || day.isSelected) FontWeight.Bold else FontWeight.Normal,
         )
+        if (day.markers.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(2.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                day.markers.forEach { marker ->
+                    CalendarMarker(marker = marker)
+                }
+            }
+        }
     }
 }
+
+@Composable
+private fun CalendarMarker(marker: CalendarMarkerType) {
+    when (marker) {
+        CalendarMarkerType.STAR -> Text(
+            text = "✦",
+            color = CityGold,
+            fontSize = 9.sp,
+            lineHeight = 9.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        CalendarMarkerType.MOOD -> Text(
+            text = "☁",
+            color = CrystalBlue,
+            fontSize = 9.sp,
+            lineHeight = 9.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        CalendarMarkerType.CORE -> Box(
+            modifier = Modifier
+                .size(6.dp)
+                .clip(CircleShape)
+                .background(TitleBlue)
+                .border(1.dp, CreamBorder, CircleShape)
+        )
+        CalendarMarkerType.CREATURE -> Box(
+            modifier = Modifier
+                .size(width = 7.dp, height = 5.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(ShadowPurple)
+        )
+        else -> Box(
+            modifier = Modifier
+                .size(5.dp)
+                .clip(CircleShape)
+                .background(marker.color)
+        )
+    }
+}
+
+private val CalendarMarkerType.color: Color
+    get() = when (this) {
+        CalendarMarkerType.OCEAN -> CrystalBlue
+        CalendarMarkerType.SOIL -> TextBrown
+        CalendarMarkerType.FOREST -> ForestGreen
+        CalendarMarkerType.DREAM -> DreamPurple
+        CalendarMarkerType.LIGHT -> CityGold
+        CalendarMarkerType.STAR -> CityGold
+        CalendarMarkerType.CORE -> TitleBlue
+        CalendarMarkerType.MOOD -> CrystalBlue
+        CalendarMarkerType.CREATURE -> ShadowPurple
+    }
 
 @Composable
 private fun SelectedDateHeader(selectedDateLabel: String) {
