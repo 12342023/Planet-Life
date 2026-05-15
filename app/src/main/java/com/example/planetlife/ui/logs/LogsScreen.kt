@@ -1,5 +1,9 @@
 package com.example.planetlife.ui.logs
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,12 +17,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -53,19 +60,28 @@ fun LogsScreen(viewModel: LogsViewModel) {
                 )
             }
             item {
-                SelectedDateHeader(selectedDateLabel = uiState.selectedDateLabel)
+                SoftSwitchContent(animationKey = uiState.selectedDate) {
+                    SelectedDateHeader(selectedDateLabel = uiState.selectedDateLabel)
+                }
             }
             if (uiState.events.isEmpty()) {
                 item {
-                    EmptyLogsView()
+                    SoftSwitchContent(animationKey = "empty-${uiState.selectedDate}") {
+                        EmptyLogsView()
+                    }
                 }
             } else {
-                itemsIndexed(uiState.events) { index, event ->
-                    TimelineEventItem(
-                        event = event,
-                        time = timeFormat.format(Date(event.createdAt)),
-                        isLast = index == uiState.events.size - 1
-                    )
+                itemsIndexed(
+                    items = uiState.events,
+                    key = { _, event -> "${uiState.selectedDate}-${event.id}" },
+                ) { index, event ->
+                    SoftSwitchContent(animationKey = "${uiState.selectedDate}-${event.id}") {
+                        TimelineEventItem(
+                            event = event,
+                            time = timeFormat.format(Date(event.createdAt)),
+                            isLast = index == uiState.events.size - 1
+                        )
+                    }
                 }
             }
         }
@@ -102,15 +118,21 @@ private fun CalendarPanel(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        CalendarWeekHeader()
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            days.chunked(7).forEach { week ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    week.forEach { day ->
-                        CalendarDayCell(day = day, onSelectDate = onSelectDate)
+        SoftSwitchContent(
+            animationKey = monthTitle,
+            horizontalOffset = 14f,
+            verticalOffset = 0f,
+        ) {
+            CalendarWeekHeader()
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                days.chunked(7).forEach { week ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        week.forEach { day ->
+                            CalendarDayCell(day = day, onSelectDate = onSelectDate)
+                        }
                     }
                 }
             }
@@ -166,11 +188,20 @@ private fun RowScope.CalendarDayCell(
         else -> CreamBorder.copy(alpha = 0.55f)
     }
     val textColor = if (day.isSelected) Color.White else TextBrown
+    val cellScale by animateFloatAsState(
+        targetValue = if (day.isSelected) 1.04f else 1f,
+        animationSpec = tween(durationMillis = 180, easing = FastOutSlowInEasing),
+        label = "calendarDayScale",
+    )
 
     Column(
         modifier = Modifier
             .weight(1f)
             .aspectRatio(1f)
+            .graphicsLayer {
+                scaleX = cellScale
+                scaleY = cellScale
+            }
             .clip(shape)
             .background(background)
             .border(1.dp, borderColor, shape)
@@ -249,6 +280,33 @@ private val CalendarMarkerType.color: Color
         CalendarMarkerType.MOOD -> CrystalBlue
         CalendarMarkerType.CREATURE -> ShadowPurple
     }
+
+@Composable
+private fun SoftSwitchContent(
+    animationKey: Any,
+    modifier: Modifier = Modifier,
+    horizontalOffset: Float = 0f,
+    verticalOffset: Float = 12f,
+    content: @Composable () -> Unit,
+) {
+    val progress = remember(animationKey) { Animatable(0f) }
+    LaunchedEffect(animationKey) {
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 240, easing = FastOutSlowInEasing),
+        )
+    }
+
+    Column(
+        modifier = modifier.graphicsLayer {
+            alpha = progress.value
+            translationX = (1f - progress.value) * horizontalOffset
+            translationY = (1f - progress.value) * verticalOffset
+        }
+    ) {
+        content()
+    }
+}
 
 @Composable
 private fun SelectedDateHeader(selectedDateLabel: String) {
